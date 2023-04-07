@@ -8,6 +8,7 @@ public class Bullet : MonoBehaviour
 
     public float bulletSpeed = 20f;
     public float bulletDamage = 10f;
+    public Player myPlayer;
 
     private void Awake()
     {
@@ -15,12 +16,31 @@ public class Bullet : MonoBehaviour
 
     private void FixedUpdate()
     {
-        transform.position += -transform.up * bulletSpeed * Time.deltaTime;
+        transform.localPosition += transform.up * bulletSpeed * Time.deltaTime;
+
+        CameraBounderyCheck();
+    }
+
+    private void CameraBounderyCheck()
+    {
+        Vector3 screenPosition = Camera.main.WorldToScreenPoint(transform.position);
+
+        if (screenPosition.x < 0 || screenPosition.x > Screen.width)
+        {
+            ReturnBullet();
+        }
+
+        if (screenPosition.y < 0 || screenPosition.y > Screen.height)
+        {
+            ReturnBullet();
+        }
     }
 
     public void ReturnBullet()
     {
         BulletFactory.Instance.ReturnBullet(gameObject);
+
+
     }
 
     private void OnCollisionEnter(Collision collision)
@@ -30,6 +50,7 @@ public class Bullet : MonoBehaviour
             if (collision.gameObject.CompareTag("Player"))
             {
                 Player collisionPlayer = collision.gameObject.GetComponent<Player>();
+                if (collisionPlayer == myPlayer) return;
                 collisionPlayer.DamageReceive(bulletDamage);
                 ReturnBullet();
             }

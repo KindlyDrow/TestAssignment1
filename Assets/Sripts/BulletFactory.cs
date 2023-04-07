@@ -12,7 +12,7 @@ public class BulletFactory : MonoBehaviour
 
     [SerializeField] private GameObject bulletPrefab;
     [SerializeField] private int initialBulletPoolSize;
-    [SerializeField] private List<GameObject> bulletPool;
+    private List<GameObject> bulletPool;
 
     private bool isReloadCd = false;
     private bool isShotCd = false;
@@ -80,14 +80,16 @@ public class BulletFactory : MonoBehaviour
         
 
         GameObject bulletGO = GetBullet();
+        bulletGO.SetActive(true);
         Bullet bullet = bulletGO.GetComponent<Bullet>();
+        bullet.myPlayer = GetComponentInParent<Player>();
 
         bulletGO.transform.position = transform.position;
-        bulletGO.transform.SetParent(null);
+        bullet.transform.SetParent(null);
 
         bullet.bulletSpeed = bulletSpeed;
         bullet.bulletDamage = bulletDamage;
-        bulletGO.SetActive(true);
+        
 
 
         StartCd();
@@ -138,7 +140,7 @@ public class BulletFactory : MonoBehaviour
     public void ReturnBullet(GameObject bullet)
     {
         bullet.SetActive(false);
-        bullet.transform.position = transform.position;
+        bullet.transform.parent = transform;   
     }
 
     public int GetBarrelCurrent()

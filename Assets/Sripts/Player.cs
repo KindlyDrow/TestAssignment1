@@ -1,12 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class Player : MonoBehaviour
+public class Player : NetworkBehaviour
 {
-    public static Player Instance;
+    public static Player Instance { get; private set; }
 
     public event EventHandler OnScoreChange;
     public event EventHandler OnDamageReceive;
@@ -55,7 +56,7 @@ public class Player : MonoBehaviour
 
         Vector3 moveDir = new Vector3(inputVector.x, 0f, inputVector.y);
 
-        playerRb.MovePosition(moveDir * Time.deltaTime * moveSpeed + transform.position);
+        if (moveDir != Vector3.zero) transform.position += (moveDir * Time.deltaTime * moveSpeed);
     }
 
     private void HandleRotation()
@@ -70,7 +71,6 @@ public class Player : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
-        Debug.Log("Collis");
         if (collision != null)
         {
             if (collision.gameObject.CompareTag("Coin"))
