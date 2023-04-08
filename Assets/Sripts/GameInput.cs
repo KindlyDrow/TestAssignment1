@@ -15,7 +15,7 @@ public class GameInput : MonoBehaviour
     {
         Instance = this;
         playerInputAction = new PlayerInputAction();
-        playerInputAction.Player.Shoot.started += Shoot_started;
+        playerInputAction.Player.Shoot.performed += Shoot_started;
         
     }
 

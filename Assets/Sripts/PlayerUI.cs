@@ -6,16 +6,17 @@ using UnityEngine.UI;
 public class PlayerUI : MonoBehaviour
 {
     [SerializeField] private Image currentHealth;
+    [SerializeField] private Player _player;
 
     private void Start()
     {
-        Player.Instance.OnDamageReceive += Player_OnDamageReceive;
+        _player.OnDamageReceive += Player_OnDamageReceive;
     }
 
     private void Player_OnDamageReceive(object sender, System.EventArgs e)
     {
         float playerHealthMax;
-        float playerHealthCur = Player.Instance.GetCurrentHealthOutMax(out playerHealthMax);
+        float playerHealthCur = _player.GetCurrentHealthOutMax(out playerHealthMax);
         currentHealth.fillAmount = playerHealthCur / playerHealthMax;
     }
 }

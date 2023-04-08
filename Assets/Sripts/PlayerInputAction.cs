@@ -69,6 +69,17 @@ public partial class @PlayerInputAction: IInputActionCollection2, IDisposable
                 },
                 {
                     ""name"": """",
+                    ""id"": ""b17df8fa-06ea-4e64-a537-4b4428eeb6c5"",
+                    ""path"": ""<Mouse>/press"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Shoot"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
                     ""id"": ""b28dbb6a-6ea2-4634-90fc-702f79b3e2c1"",
                     ""path"": ""<Joystick>/stick"",
                     ""interactions"": """",

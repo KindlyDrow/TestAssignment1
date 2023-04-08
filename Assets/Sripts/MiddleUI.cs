@@ -8,17 +8,28 @@ public class MiddleUI : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI ammoText;
     [SerializeField] private Image reloadImage;
+    private Player _player;
 
     private void Start()
     {
+        StartCoroutine(WaitForPlayerInstance());
         reloadImage.fillAmount = 0f;
-        BulletFactory.Instance.OnBarrelCurrentChange += BulletFactory_OnShot;
-        BulletFactory.Instance.OnReload += BulletFactory_OnReload;
+    }
+
+    private IEnumerator WaitForPlayerInstance()
+    {
+        while (Player.LocalInstance == null)
+        {
+            yield return null;
+        }
+
+        Player.LocalInstance.OnBarrelCurrentChange += BulletFactory_OnShot;
+        Player.LocalInstance.OnReload += BulletFactory_OnReload;
     }
 
     private void BulletFactory_OnReload(object sender, System.EventArgs e)
     {
-        float reloadTime = BulletFactory.Instance.GetReloadTime();
+        float reloadTime = Player.LocalInstance.GetReloadTime();
         
         StartCoroutine(StartReloadVisual(reloadTime));
     }
@@ -47,6 +58,6 @@ public class MiddleUI : MonoBehaviour
 
     private void ResetAmmoText()
     {
-        ammoText.text = (BulletFactory.Instance.GetBarrelCurrent() + "/" + BulletFactory.Instance.GetBarrelMax());
+        ammoText.text = (Player.LocalInstance.GetBarrelCurrent() + "/" + Player.LocalInstance.GetBarrelMax());
     }
 }
