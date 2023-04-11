@@ -49,4 +49,9 @@ public class GameInput : MonoBehaviour
 
         return inputVector;
     }
+
+    private void OnDestroy()
+    {
+        playerInputAction.Player.Shoot.performed -= Shoot_started;
+    }
 }

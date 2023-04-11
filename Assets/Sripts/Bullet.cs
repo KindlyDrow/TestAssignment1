@@ -44,19 +44,16 @@ public class Bullet : NetworkBehaviour
 
     private void OnCollisionEnter(Collision collision)
     {
+
         if (collision != null)
         {
             if (collision.gameObject.CompareTag("Player"))
             {
                 Player collisionPlayer = collision.gameObject.GetComponent<Player>();
                 if (collisionPlayer == myPlayer) return;
+
+                if (IsClient) return;
                 collisionPlayer.DamageReceive(bulletDamage);
-                ReturnBullet();
-            }
-            if (collision.gameObject.CompareTag("Coin"))
-            {
-                Coin collisionCoin = collision.gameObject.GetComponent<Coin>();
-                Destroy(collisionCoin.gameObject);
                 ReturnBullet();
             }
         }

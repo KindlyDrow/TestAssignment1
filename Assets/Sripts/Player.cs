@@ -15,6 +15,8 @@ public class Player : NetworkBehaviour
     public event EventHandler OnBarrelCurrentChange;
     public event EventHandler OnReload;
 
+    [SerializeField] private List<Vector3> spawnPositionsList;
+    [SerializeField] private PlayerVisual playerVisual;
     [SerializeField] private Transform _fireTransform;
     [SerializeField] private float moveSpeed;
     [SerializeField] private float rotateSpeed;
@@ -39,21 +41,27 @@ public class Player : NetworkBehaviour
 
     }
 
-    public override void OnNetworkSpawn()
-    {
-        if (IsOwner)
-        {
-            LocalInstance = this;
-        }
-        OnAnyPlayerSpawned?.Invoke(this, EventArgs.Empty);
-    }
-
     private void Start()
     {
         GameInput.Instance.OnShot += GameInput_OnShot;
         score = 0;
         playerRb = GetComponent<Rigidbody>();
         barrelCur = barrelMax;
+        PlayerData playerData = MultiplayerManager.Instance.GetPlayerDataFromClientId(OwnerClientId);
+        Debug.Log(playerData);
+        playerVisual.SetPlayercolor(MultiplayerManager.Instance.GetPlayerColor(playerData.colorId));
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        if (IsOwner)
+        {
+            LocalInstance = this;
+        }
+
+        transform.position = spawnPositionsList[MultiplayerManager.Instance.GetPlayerDataIndexFromClientId(OwnerClientId)];
+
+        OnAnyPlayerSpawned?.Invoke(this, EventArgs.Empty);
     }
 
     private void GameInput_OnShot(object sender, System.EventArgs e)
@@ -223,6 +231,11 @@ public class Player : NetworkBehaviour
     {
         healthMax = _healthMax;
         return healthCur;
+    }
+
+    public override void OnDestroy()
+    {
+        GameInput.Instance.OnShot -= GameInput_OnShot;
     }
 
 }

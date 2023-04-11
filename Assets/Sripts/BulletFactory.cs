@@ -6,7 +6,7 @@ using UnityEngine;
 
 public class BulletFactory : NetworkBehaviour
 {
-    public static BulletFactory Instance;
+    public static BulletFactory Instance { get; private set; }
 
     [SerializeField] private GameObject bulletPrefab;
     [SerializeField] private int initialBulletPoolSize;
@@ -15,7 +15,6 @@ public class BulletFactory : NetworkBehaviour
     private void Awake()
     {
             Instance = this;
-
     }
 
     private void Start()
