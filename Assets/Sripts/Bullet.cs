@@ -1,9 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
 
-public class Bullet : MonoBehaviour
+public class Bullet : NetworkBehaviour
 {
 
     public float bulletSpeed = 20f;
@@ -17,7 +18,6 @@ public class Bullet : MonoBehaviour
     private void FixedUpdate()
     {
         transform.localPosition += transform.up * bulletSpeed * Time.deltaTime;
-
         CameraBounderyCheck();
     }
 
@@ -38,26 +38,22 @@ public class Bullet : MonoBehaviour
 
     public void ReturnBullet()
     {
-        BulletFactory.Instance.ReturnBullet(gameObject);
-
-
+        NetworkObject bulletNO = NetworkObject;
+        MultiplayerGameHandler.Instance.ReturnBulletServerRpc(bulletNO);
     }
 
     private void OnCollisionEnter(Collision collision)
     {
+
         if (collision != null)
         {
             if (collision.gameObject.CompareTag("Player"))
             {
                 Player collisionPlayer = collision.gameObject.GetComponent<Player>();
                 if (collisionPlayer == myPlayer) return;
+
+                if (IsClient) return;
                 collisionPlayer.DamageReceive(bulletDamage);
-                ReturnBullet();
-            }
-            if (collision.gameObject.CompareTag("Coin"))
-            {
-                Coin collisionCoin = collision.gameObject.GetComponent<Coin>();
-                Destroy(collisionCoin.gameObject);
                 ReturnBullet();
             }
         }

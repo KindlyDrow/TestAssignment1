@@ -1,18 +1,127 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class GameManager : MonoBehaviour
+public class GameManager : NetworkBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    public static GameManager Instance;
+
+    public event EventHandler OnGameEnd;
+
+    private Dictionary<ulong, bool> isPlayerAlive;
+
+    public enum State
     {
-        
+        GamePreparing = default,
+        GameStarted,
+        GameEnd,
     }
 
-    // Update is called once per frame
-    void Update()
+    public State _state { get; private set; }
+
+    private float coinSpawInterval;
+    [SerializeField] private float coinSpawIntervalMax;
+    float timer = 2f;
+
+    private void Awake()
     {
-        
+        Instance = this;
+
+        isPlayerAlive = new Dictionary<ulong, bool>();
+
+        ChangeState(State.GamePreparing);
+    }
+
+    private void Update()
+    {
+        switch (_state)
+        {
+            case State.GamePreparing:
+                
+                timer -= Time.deltaTime;
+                if (timer < 0) ChangeState(State.GameStarted);
+                break;
+            case State.GameStarted:
+                SpawnCoins();
+                break;
+            case State.GameEnd:
+                OnGameEnd?.Invoke(this, EventArgs.Empty);
+                break;
+        }
+    }
+
+    private void ChangeState(State state)
+    {
+        EndState(_state);
+        switch (state)
+        {
+            case State.GamePreparing:
+                break;
+            case State.GameStarted:
+                break;
+            case State.GameEnd:
+                break;
+        }
+        _state = state;
+    }
+
+    private void EndState(State state)
+    {
+        switch (state)
+        {
+            case State.GamePreparing:
+                break;
+            case State.GameStarted:
+                break;
+            case State.GameEnd:
+                break;
+        }
+    }
+
+    private void SpawnCoins()
+    {
+       if(!IsServer) { return; }
+
+        coinSpawInterval -= Time.deltaTime;
+        if (coinSpawInterval < 0)
+        {
+            coinSpawInterval = coinSpawIntervalMax;
+            if (CoinFactory.Instance.CanGetCoin())
+            {
+                MultiplayerGameHandler.Instance.SpawnCoinServerRpc();
+            }
+        }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void SetPlayerAliveServerRpc(bool isAlive, ServerRpcParams serverRpcParams = default)
+    {
+        SetPlayerAliveClientRpc(isAlive, serverRpcParams.Receive.SenderClientId);
+    }
+
+    [ClientRpc]
+    private void SetPlayerAliveClientRpc(bool isAlive, ulong clientId)
+    {
+        isPlayerAlive[clientId] = isAlive;
+
+        int playersAlive = 0;
+        foreach (ulong playerClientId in isPlayerAlive.Keys)
+        {
+            if (isPlayerAlive[playerClientId])
+            {
+                playersAlive++;
+            }
+        }
+        if (playersAlive < 2 && _state == State.GameStarted)
+        {
+            ChangeState(State.GameEnd);
+        }
+    }
+
+    public Dictionary<ulong, bool> GetPlayerDictionary()
+    {
+        return isPlayerAlive;
     }
 }

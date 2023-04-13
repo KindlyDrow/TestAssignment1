@@ -15,7 +15,7 @@ public class GameInput : MonoBehaviour
     {
         Instance = this;
         playerInputAction = new PlayerInputAction();
-        playerInputAction.Player.Shoot.started += Shoot_started;
+        playerInputAction.Player.Shoot.performed += Shoot_started;
         
     }
 
@@ -48,5 +48,10 @@ public class GameInput : MonoBehaviour
         inputVector = inputVector.normalized;
 
         return inputVector;
+    }
+
+    private void OnDestroy()
+    {
+        playerInputAction.Player.Shoot.performed -= Shoot_started;
     }
 }
