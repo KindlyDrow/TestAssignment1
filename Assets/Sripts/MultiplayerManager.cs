@@ -293,6 +293,7 @@ public class MultiplayerManager : NetworkBehaviour
 
     public override void OnDestroy()
     {
+        playerDataNetworkList.Dispose();
         NetworkManager.Singleton.Shutdown();
     }
 }
