@@ -45,10 +45,10 @@ public class Player : NetworkBehaviour
     {
         GameInput.Instance.OnShot += GameInput_OnShot;
         score = 0;
+        GameManager.Instance.SetPlayerAliveServerRpc(true);
         playerRb = GetComponent<Rigidbody>();
         barrelCur = barrelMax;
         PlayerData playerData = MultiplayerManager.Instance.GetPlayerDataFromClientId(OwnerClientId);
-        Debug.Log(playerData);
         playerVisual.SetPlayercolor(MultiplayerManager.Instance.GetPlayerColor(playerData.colorId));
     }
 
@@ -109,7 +109,7 @@ public class Player : NetworkBehaviour
             {
                 Coin coin = collision.gameObject.GetComponent<Coin>();
                 AddCoin(coin.coinValue);
-                Destroy(collision.gameObject);
+                coin.ReturnCoin();
             }
         }
     }
@@ -122,7 +122,7 @@ public class Player : NetworkBehaviour
         }
 
         NetworkObject playerNO = NetworkObject;
-        MultiplayerManager.Instance.ShootServerRpc(bulletSpeed, bulletDamage, playerNO);
+        MultiplayerGameHandler.Instance.ShootServerRpc(bulletSpeed, bulletDamage, playerNO);
 
         StartCd();
         OnBarrelCurrentChange?.Invoke(this, EventArgs.Empty);
@@ -194,6 +194,7 @@ public class Player : NetworkBehaviour
     public void AddCoin(int value)
     {
         score += value;
+        MultiplayerManager.Instance.SetPlayerScoreServerRpc(score);
         OnScoreChange?.Invoke(this, EventArgs.Empty);
     }
 
@@ -211,6 +212,10 @@ public class Player : NetworkBehaviour
             DamageReceiveServerRpc(damage);
             
             StartCoroutine(StartReloadCanTakeDamage(canTakeDamageCD));
+        }
+        if (healthCur <= 0)
+        {
+            GameManager.Instance.SetPlayerAliveServerRpc(false);
         }
     }
 

@@ -39,7 +39,7 @@ public class Bullet : NetworkBehaviour
     public void ReturnBullet()
     {
         NetworkObject bulletNO = NetworkObject;
-        MultiplayerManager.Instance.ReturnBulletServerRpc(bulletNO);
+        MultiplayerGameHandler.Instance.ReturnBulletServerRpc(bulletNO);
     }
 
     private void OnCollisionEnter(Collision collision)
