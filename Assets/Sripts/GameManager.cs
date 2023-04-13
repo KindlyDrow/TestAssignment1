@@ -9,6 +9,7 @@ public class GameManager : NetworkBehaviour
     public static GameManager Instance;
 
     public event EventHandler OnGameEnd;
+    public event EventHandler OnGameStarted;
 
     private Dictionary<ulong, bool> isPlayerAlive;
 
@@ -23,7 +24,7 @@ public class GameManager : NetworkBehaviour
 
     private float coinSpawInterval;
     [SerializeField] private float coinSpawIntervalMax;
-    float timer = 2f;
+    public NetworkVariable<float> timer { private set; get; } = new NetworkVariable<float>(5f);
 
     private void Awake()
     {
@@ -40,8 +41,8 @@ public class GameManager : NetworkBehaviour
         {
             case State.GamePreparing:
                 
-                timer -= Time.deltaTime;
-                if (timer < 0) ChangeState(State.GameStarted);
+                if (IsServer) timer.Value -= Time.deltaTime;
+                if (timer.Value < 0) ChangeState(State.GameStarted);
                 break;
             case State.GameStarted:
                 SpawnCoins();
@@ -60,6 +61,7 @@ public class GameManager : NetworkBehaviour
             case State.GamePreparing:
                 break;
             case State.GameStarted:
+                OnGameStarted?.Invoke(this, EventArgs.Empty);
                 break;
             case State.GameEnd:
                 break;

@@ -27,7 +27,7 @@ public class Player : NetworkBehaviour
     [SerializeField] private int barrelCur = 10;
     [SerializeField] private float shotCd = 0.5f;
     [SerializeField] private float bulletSpeed = 30f;
-    [SerializeField] private float bulletDamage = 10f;
+    [SerializeField] private float bulletDamage = 40f;
     [SerializeField] private float canTakeDamageCD = 0.2f;
 
     private int score = 0;
@@ -35,6 +35,8 @@ public class Player : NetworkBehaviour
     private bool isShotCd;
     private bool isReloadCd;
     private bool canTakeDamage = true;
+    private bool canMove = false;
+    private bool canShot = false;
 
     private void Awake()
     {
@@ -44,12 +46,19 @@ public class Player : NetworkBehaviour
     private void Start()
     {
         GameInput.Instance.OnShot += GameInput_OnShot;
+        GameManager.Instance.OnGameStarted += GameManager_OnGameStarted;
         score = 0;
         GameManager.Instance.SetPlayerAliveServerRpc(true);
         playerRb = GetComponent<Rigidbody>();
         barrelCur = barrelMax;
         PlayerData playerData = MultiplayerManager.Instance.GetPlayerDataFromClientId(OwnerClientId);
         playerVisual.SetPlayercolor(MultiplayerManager.Instance.GetPlayerColor(playerData.colorId));
+    }
+
+    private void GameManager_OnGameStarted(object sender, EventArgs e)
+    {
+        canMove = true;
+        canShot = true;
     }
 
     public override void OnNetworkSpawn()
@@ -66,14 +75,14 @@ public class Player : NetworkBehaviour
 
     private void GameInput_OnShot(object sender, System.EventArgs e)
     {
-        if (IsOwner) Shot();
+        if (IsOwner && canShot) Shot();
     }
 
     private void FixedUpdate()
     {
         if (!IsOwner) return;
         HandleRotation();
-        HandleMovement();
+        if (canMove) HandleMovement();
 
     }
 
@@ -88,14 +97,14 @@ public class Player : NetworkBehaviour
 
     private void HandleRotation()
     {
-        Vector3 mousePosition = Input.mousePosition;
-        mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(mousePosition.x, mousePosition.y, Camera.main.transform.position.y));
-        mousePosition.y = transform.position.y;
-        Vector3 rotateDir = mousePosition - transform.position;
-        rotateDir.Normalize();
-        //Vector2 inputVector = GameInput.Instance.GetRotationVectorNormalized();
+        //Vector3 mousePosition = Input.mousePosition;
+        //mousePosition = Camera.main.ScreenToWorldPoint(new Vector3(mousePosition.x, mousePosition.y, Camera.main.transform.position.y));
+        //mousePosition.y = transform.position.y;
+        //Vector3 rotateDir = mousePosition - transform.position;
+        //rotateDir.Normalize();
+        Vector2 inputVector = GameInput.Instance.GetRotationVectorNormalized();
 
-        //Vector3 rotateDir = new Vector3(inputVector.x, 0f, inputVector.y);
+        Vector3 rotateDir = new Vector3(inputVector.x, 0f, inputVector.y);
 
         if (rotateDir != Vector3.zero) { transform.forward = Vector3.Slerp(transform.forward, rotateDir, Time.deltaTime * rotateSpeed); }
 
@@ -241,6 +250,7 @@ public class Player : NetworkBehaviour
     public override void OnDestroy()
     {
         GameInput.Instance.OnShot -= GameInput_OnShot;
+        GameManager.Instance.OnGameStarted -= GameManager_OnGameStarted;
     }
 
 }
